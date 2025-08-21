@@ -1,26 +1,33 @@
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // <- asegurate de instalar cors
 const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Permitir CORS desde cualquier origen
+// Permitir CORS desde cualquier origen (más simple)
 app.use(cors());
 
-// Si quieres restringir a tu frontend específico:
+// O permitir solo tu frontend específico
 // app.use(cors({ origin: 'https://yaaaaaaaa-1.onrender.com' }));
 
 app.get('/visitas', (req, res) => {
-    let visitas = 0;
-    try {
-        visitas = parseInt(fs.readFileSync('visitas.txt', 'utf8')) || 0;
-        visitas = Math.ceil(visitas / 2); // tu ajuste para doble conteo
-        fs.writeFileSync('visitas.txt', (visitas * 2).toString());
-    } catch (err) {
-        console.error(err);
-    }
-    res.json({ visitas });
+  const filePath = './contador.txt';
+  
+  // Leer el contador
+  let contador = 0;
+  if (fs.existsSync(filePath)) {
+    contador = parseInt(fs.readFileSync(filePath, 'utf8')) || 0;
+  }
+
+  // Aumentar y guardar
+  contador++;
+  fs.writeFileSync(filePath, contador.toString());
+
+  // Devolver valor
+  res.json({ visitas: contador });
 });
 
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
