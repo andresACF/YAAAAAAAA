@@ -1,33 +1,32 @@
 const express = require('express');
-const cors = require('cors'); // <- asegurate de instalar cors
 const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Permitir CORS desde cualquier origen (más simple)
 app.use(cors());
+app.use(express.json());
 
-// O permitir solo tu frontend específico
-// app.use(cors({ origin: 'https://yaaaaaaaa-1.onrender.com' }));
-
+// API de visitas
 app.get('/visitas', (req, res) => {
-  const filePath = './contador.txt';
-  
-  // Leer el contador
-  let contador = 0;
-  if (fs.existsSync(filePath)) {
-    contador = parseInt(fs.readFileSync(filePath, 'utf8')) || 0;
-  }
-
-  // Aumentar y guardar
-  contador++;
-  fs.writeFileSync(filePath, contador.toString());
-
-  // Devolver valor
-  res.json({ visitas: contador });
+  fs.readFile('visitas.txt', 'utf8', (err, data) => {
+    if (err) return res.status(500).send('Error leyendo el archivo');
+    let visitas = parseInt(data) || 0;
+    visitas++;
+    fs.writeFile('visitas.txt', visitas.toString(), (err) => {
+      if (err) console.log(err);
+    });
+    res.json({ visitas });
+  });
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+// Servir React
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
