@@ -4,6 +4,7 @@ function ContadorGlobal() {
   const [visitas, setVisitas] = useState(0);
 
   useEffect(() => {
+    // Si frontend y backend están juntos
     fetch('/visitas')
       .then(res => res.json())
       .then(data => setVisitas(data.visitas))
